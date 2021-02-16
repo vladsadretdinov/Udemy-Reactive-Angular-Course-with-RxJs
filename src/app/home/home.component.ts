@@ -1,8 +1,11 @@
+import { CoursesStore } from './../services/courses.store';
+import { MessagesService } from './../messages/messages.service';
+import { LoadingService } from './../loading/loading.service';
 import { CoursesService } from './../services/courses.service';
 import { Component, OnInit } from '@angular/core';
 import { Course, sortCoursesBySeqNo } from '../model/course';
-import { Observable } from 'rxjs';
-import { map } from 'rxjs/operators';
+import { Observable, throwError } from 'rxjs';
+import { finalize, map, catchError } from 'rxjs/operators';
 
 
 @Component({
@@ -16,27 +19,17 @@ export class HomeComponent implements OnInit {
   advancedCourses$: Observable<Course[]>;
 
 
-  constructor(private coursesService: CoursesService) { }
+  constructor(
+    private coursesStore: CoursesStore
+  ) { }
 
   ngOnInit() {
     this.reloadCourses();
   }
 
   reloadCourses() {
-    const courses$ = this.coursesService.loadedAllCourses()
-      .pipe(
-        map(courses => courses.sort(sortCoursesBySeqNo))
-      )
-
-    this.beginnerCourses$ = courses$
-      .pipe(
-        map(courses => courses.filter(course => course.category == "BEGINNER"))
-      )
-
-    this.advancedCourses$ = courses$
-      .pipe(
-        map(courses => courses.filter(course => course.category == "ADVANCED"))
-      )
+    this.beginnerCourses$ = this.coursesStore.filterByCategory('BEGINNER');
+    this.advancedCourses$ = this.coursesStore.filterByCategory('ADVANCED');
   }
 }
 
