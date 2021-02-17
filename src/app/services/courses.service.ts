@@ -1,4 +1,4 @@
-import { map, shareReplay, filter } from 'rxjs/operators';
+import { map, shareReplay, filter, share } from 'rxjs/operators';
 import { Observable } from 'rxjs';
 import { HttpClient } from '@angular/common/http';
 import { Injectable } from "@angular/core";
@@ -11,6 +11,23 @@ import { Lesson } from '../model/lesson';
 export class CoursesService {
   constructor(private http: HttpClient) {
 
+  }
+
+  loadCourseById(courseId: number) {
+    return this.http.get<Course>(`/api/courses/${courseId}`)
+      .pipe(shareReplay())
+  }
+
+  loadAllCourseLessons(courseId: number): Observable<Lesson[]> {
+    return this.http.get<Lesson[]>('/api/lessons', {
+      params: {
+        pageSie: "10000",
+        course: courseId.toString()
+      }
+    }).pipe(
+      map(res => res["payload"]),
+      shareReplay()
+    )
   }
 
   loadedAllCourses(): Observable<Course[]> {
